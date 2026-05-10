@@ -11,7 +11,7 @@ class State(ABC):
 
     @abstractmethod
     def __init__(self) -> None:
-        pass
+        self.next_states: list[State] = []
 
     @abstractmethod
     def check_self(self, char: str) -> bool:
@@ -54,10 +54,10 @@ class DotState(State):
 
     def __init__(self):
         super().__init__()
-        self.next_states = []
+        self.next_states: list[State] = []
 
     def check_self(self, char: str):
-        return True
+        return True # matches everything
 
 
 class AsciiState(State):
@@ -70,18 +70,18 @@ class AsciiState(State):
 
     def __init__(self, symbol: str) -> None:
         self.symbol = symbol
-        self.next_states = []
+        self.next_states: list[State] = []
 
     def check_self(self, curr_char: str) -> State | Exception:
         return curr_char == self.symbol
-
 
 class StarState(State):
 
     next_states: list[State] = []
 
-    def __init__(self, checking_state: State):
-        pass  # Implement
+    def __init__(self, check_state: State):
+        self.check_state = check_state
+        self.next_states: list[State] = [self]
 
     def check_self(self, char):
         for state in self.next_states:
@@ -90,16 +90,15 @@ class StarState(State):
 
         return False
 
-
 class PlusState(State):
     next_states: list[State] = []
 
-    def __init__(self, checking_state: State):
-        pass  # Implement
+    def __init__(self, check_state: State):
+        self.check_state = check_state
+        self.next_states: list[State] = [self] # Loop back to self
 
     def check_self(self, char):
-        pass  # Implement
-
+        return self.check_state.check_self(char) # temp
 
 class RegexFSM:
     curr_state: State = StartState()
@@ -136,8 +135,22 @@ class RegexFSM:
 
         return new_state
 
-    def check_string(self):
-        pass  # Implement
+    def check_string(self, input_string: str) -> bool:
+        states = {self.curr_state}
+
+        for char in input_string:
+            next_states = set()
+            for state in states:
+                # check transitions from the current state
+                for t in state.next_states:
+                    if t.check_self(char):
+                        next_states.add(t)
+
+            states = next_states
+            if not states:
+                return False
+
+        return any(isinstance(s, TerminationState) for s in states)
 
 if __name__ == "__main__":
     regex_pattern = "a*4.+hi"
