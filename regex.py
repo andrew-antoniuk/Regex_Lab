@@ -131,12 +131,19 @@ class RegexFSM:
         match next_token:
             case next_token if next_token == ".":
                 new_state = DotState()
+
             case next_token if next_token == "*":
                 new_state = StarState(tmp_next_state)
-                # here you have to think, how to do it.
+
+                tmp_next_state.next_states.append(tmp_next_state)
+                for state in prev_state.next_states:
+                    if state == tmp_next_state:
+                        prev_state.epsilon_states.append(tmp_next_state)
+                return None
 
             case next_token if next_token == "+":
-                pass  # Implement
+                tmp_next_state.next_states.append(tmp_next_state)
+                return None
 
             case next_token if next_token.isascii():
                 new_state = AsciiState(next_token)
@@ -147,21 +154,24 @@ class RegexFSM:
         return new_state
 
     def check_string(self, input_string: str) -> bool:
-        states = {self.curr_state}
+        states = self.epsilon_f({self.curr_state})
 
         for char in input_string:
             next_states = set()
             for state in states:
-                # check transitions from the current state
-                for t in state.next_states:
-                    if t.check_self(char):
-                        next_states.add(t)
+                for n in state.next_states:
+                    if n.check_self(char):
+                        next_states.update(self.epsilon_f({n}))
 
             states = next_states
             if not states:
                 return False
 
+        states = self.epsilon_f(states)
         return any(isinstance(s, TerminationState) for s in states)
+
+    def epsilon_f(self, states):
+        pass
 
 if __name__ == "__main__":
     regex_pattern = "a*4.+hi"
