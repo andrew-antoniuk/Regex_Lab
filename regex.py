@@ -35,7 +35,6 @@ class State(ABC):
                 return state
         raise NotImplementedError("rejected string")
 
-
 class StartState(State):
 
     """
@@ -71,7 +70,6 @@ class TerminationState(State):
     def check_self(self, char: str) -> bool:
         return False # end of string
 
-
 class DotState(State):
     """
     state for . character (any character accepted)
@@ -86,7 +84,6 @@ class DotState(State):
     def check_self(self, char: str):
         return True # matches everything
 
-
 class AsciiState(State):
     """
     state for alphabet letters or numbers
@@ -100,8 +97,8 @@ class AsciiState(State):
         self.next_states = []
         self.epsilon_states = []
 
-    def check_self(self, curr_char: str) -> State | Exception:
-        return curr_char == self.symbol
+    def check_self(self, char: str) -> State | Exception:
+        return char == self.symbol
 
 class StarState(State):
 
@@ -224,11 +221,10 @@ class RegexFSM:
         c, stack = set(states), list(states)
         while stack:
             state = stack.pop()
-            for eps_state in state.epsilon_states:
-                if eps_state not in c:
-                    c.add(eps_state)
-                    stack.append(eps_state)
-
+            for s in state.epsilon_states:
+                if s not in c:
+                    c.add(s)
+                    stack.append(s)
         return c
 
 if __name__ == "__main__":
