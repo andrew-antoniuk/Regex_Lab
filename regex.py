@@ -116,8 +116,12 @@ class RegexFSM:
 
         for char in regex_expr:
             tmp_next_state = self.__init_next_state(char, prev_state, tmp_next_state)
-            prev_state.next_states.append(tmp_next_state)
-            prev_state = tmp_next_state # temp
+            if tmp_next_state is not None: # logic fix
+                prev_state.next_states.append(tmp_next_state)
+                prev_state = tmp_next_state # redefine
+
+        t = TerminationState()
+        prev_state.epsilon_states.append(t)
 
     def __init_next_state(
         self, next_token: str, prev_state: State, tmp_next_state: State
