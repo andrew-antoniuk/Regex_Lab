@@ -171,7 +171,16 @@ class RegexFSM:
         return any(isinstance(s, TerminationState) for s in states)
 
     def epsilon_f(self, states):
-        pass
+
+        c, stack = set(states), list(states)
+        while stack:
+            state = stack.pop()
+            for eps_state in state.epsilon_states:
+                if eps_state not in c:
+                    c.add(eps_state)
+                    stack.append(eps_state)
+
+        return c
 
 if __name__ == "__main__":
     regex_pattern = "a*4.+hi"
