@@ -87,7 +87,6 @@ class StarState(State):
         self.epsilon_states = []
 
     def check_self(self, char):
-        # temp
 
         # for state in self.next_states:
         #     if state.check_self(char):
@@ -107,10 +106,10 @@ class PlusState(State):
         return False
 
 class RegexFSM:
-    curr_state: State = StartState()
+    # curr_state: State = StartState()
 
     def __init__(self, regex_expr: str) -> None:
-
+        self.curr_state = StartState()
         prev_state = self.curr_state
         tmp_next_state = self.curr_state
 
@@ -133,12 +132,10 @@ class RegexFSM:
                 new_state = DotState()
 
             case next_token if next_token == "*":
-                new_state = StarState(tmp_next_state)
+                prev_state.next_states.append(prev_state)
 
-                tmp_next_state.next_states.append(tmp_next_state)
-                for state in prev_state.next_states:
-                    if state == tmp_next_state:
-                        prev_state.epsilon_states.append(tmp_next_state)
+                self.curr_state.epsilon_states.append(prev_state)
+
                 return None
 
             case next_token if next_token == "+":
