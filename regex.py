@@ -12,6 +12,7 @@ class State(ABC):
     @abstractmethod
     def __init__(self) -> None:
         self.next_states: list[State] = []
+        self.epsilon_states: list[State] = []
 
     @abstractmethod
     def check_self(self, char: str) -> bool:
@@ -34,12 +35,12 @@ class StartState(State):
         super().__init__()
 
     def check_self(self, char):
-        return super().check_self(char)
-
+        return False
 
 class TerminationState(State):
     def __init__(self):
         self.next_states = []
+        self.epsilon_states = []
 
     def check_self(self, char: str) -> bool:
         return False # end of string
@@ -53,8 +54,8 @@ class DotState(State):
     next_states: list[State] = []
 
     def __init__(self):
-        super().__init__()
-        self.next_states: list[State] = []
+        self.next_states = []
+        self.epsilon_states = []
 
     def check_self(self, char: str):
         return True # matches everything
@@ -70,7 +71,8 @@ class AsciiState(State):
 
     def __init__(self, symbol: str) -> None:
         self.symbol = symbol
-        self.next_states: list[State] = []
+        self.next_states = []
+        self.epsilon_states = []
 
     def check_self(self, curr_char: str) -> State | Exception:
         return curr_char == self.symbol
@@ -81,12 +83,15 @@ class StarState(State):
 
     def __init__(self, check_state: State):
         self.check_state = check_state
-        self.next_states: list[State] = [self]
+        self.next_states = []
+        self.epsilon_states = []
 
     def check_self(self, char):
-        for state in self.next_states:
-            if state.check_self(char):
-                return True
+        # temp
+
+        # for state in self.next_states:
+        #     if state.check_self(char):
+        #         return True
 
         return False
 
@@ -95,10 +100,11 @@ class PlusState(State):
 
     def __init__(self, check_state: State):
         self.check_state = check_state
-        self.next_states: list[State] = [self] # Loop back to self
+        self.next_states = []
+        self.epsilon_states = []
 
     def check_self(self, char):
-        return self.check_state.check_self(char) # temp
+        return False
 
 class RegexFSM:
     curr_state: State = StartState()
@@ -111,6 +117,7 @@ class RegexFSM:
         for char in regex_expr:
             tmp_next_state = self.__init_next_state(char, prev_state, tmp_next_state)
             prev_state.next_states.append(tmp_next_state)
+            prev_state = tmp_next_state # temp
 
     def __init_next_state(
         self, next_token: str, prev_state: State, tmp_next_state: State
