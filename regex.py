@@ -16,7 +16,7 @@ class State(ABC):
     @abstractmethod
     def check_self(self, char: str) -> bool:
         """
-        function checks whether occured character is handled by current ctate
+        function checks whether occured character is handled by current state
         """
         pass
 
@@ -38,7 +38,11 @@ class StartState(State):
 
 
 class TerminationState(State):
-    pass  # Implement
+    def __init__(self):
+        self.next_states = []
+
+    def check_self(self, char: str) -> bool:
+        return False # end of string
 
 
 class DotState(State):
@@ -50,9 +54,10 @@ class DotState(State):
 
     def __init__(self):
         super().__init__()
+        self.next_states = []
 
     def check_self(self, char: str):
-        pass  # Implement
+        return True
 
 
 class AsciiState(State):
@@ -64,10 +69,11 @@ class AsciiState(State):
     curr_sym = ""
 
     def __init__(self, symbol: str) -> None:
-        pass  # Implement
+        self.symbol = symbol
+        self.next_states = []
 
     def check_self(self, curr_char: str) -> State | Exception:
-        pass  # Implement
+        return curr_char == self.symbol
 
 
 class StarState(State):
@@ -132,7 +138,6 @@ class RegexFSM:
 
     def check_string(self):
         pass  # Implement
-
 
 if __name__ == "__main__":
     regex_pattern = "a*4.+hi"
