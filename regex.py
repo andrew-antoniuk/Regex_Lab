@@ -2,12 +2,15 @@
 Regex Lab
 """
 
-#pylint: skip-file
-
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
 class State(ABC):
+
+    """
+    Abstract base class for all FSM states.
+    Derived classes define how a particular symbol is recognized.
+    """
 
     @abstractmethod
     def __init__(self) -> None:
@@ -19,9 +22,14 @@ class State(ABC):
         """
         function checks whether occured character is handled by current state
         """
-        pass
 
     def check_next(self, next_char: str) -> State | Exception:
+
+        """
+        Find the next reachable state for the given character.
+        The method iterates through outgoing transitions and returns the first matching state.
+        """
+
         for state in self.next_states:
             if state.check_self(next_char):
                 return state
@@ -29,15 +37,33 @@ class State(ABC):
 
 
 class StartState(State):
+
+    """
+    Initial state of the finite-state machine.
+    This state does not consume characters and only serves as an entry point into the automaton
+    """
+
     next_states: list[State] = []
 
     def __init__(self):
         super().__init__()
 
     def check_self(self, char):
+
+        """
+        Start state never directly accepts characters.
+        Character processing begins from its outgoing transitions.
+        """
+
         return False
 
 class TerminationState(State):
+
+    """
+    Final accepting state of the automaton.
+    Reaching this state after processing the whole input means that the string is accepted.
+    """
+
     def __init__(self):
         self.next_states = []
         self.epsilon_states = []
@@ -79,6 +105,11 @@ class AsciiState(State):
 
 class StarState(State):
 
+    """
+    Helper state for handling the '*' regex operator.
+    The operator allows zero or more repetitions of the previous expression.
+    """
+
     next_states: list[State] = []
 
     def __init__(self, check_state: State):
@@ -95,6 +126,12 @@ class StarState(State):
         return False
 
 class PlusState(State):
+
+    """
+    Helper state for handling the '+' regex operator.
+    The operator allows one or more repetitions of the previous expression.
+    """
+
     next_states: list[State] = []
 
     def __init__(self, check_state: State):
@@ -106,6 +143,11 @@ class PlusState(State):
         return False
 
 class RegexFSM:
+
+    """
+    Regex compiler and finite-state machine executor.
+    The class converts a regex expression into connected states and validates input strings.
+    """
     # curr_state: State = StartState()
 
     def __init__(self, regex_expr: str) -> None:
@@ -151,6 +193,11 @@ class RegexFSM:
         return new_state
 
     def check_string(self, input_string: str) -> bool:
+
+        """
+        Validate an input string using FSM traversal
+        """
+
         states = self.epsilon_f({self.curr_state})
 
         for char in input_string:
@@ -168,6 +215,11 @@ class RegexFSM:
         return any(isinstance(s, TerminationState) for s in states)
 
     def epsilon_f(self, states):
+
+        """
+        Compute epsilon-closure for a set of states.
+        The closure contains all states reachable without consuming additional characters.
+        """
 
         c, stack = set(states), list(states)
         while stack:
